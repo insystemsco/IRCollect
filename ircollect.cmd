@@ -1,7 +1,6 @@
 @echo off
-:: JP 3/2019
 ::
-:: Link: https://github.com/insystemsco/IR_Collect
+:: Link: https://github.com/insystemsco/IRCollect/
 ::
 :: Provided as-is with no warranty.
 :: Licensed under the GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
