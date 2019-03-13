@@ -33,7 +33,6 @@ if "%PROCESSOR_ARCHITECTURE%" == "x86" set arch=32
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" set arch=64
 
 :: check_Permissions
-    echo Detecting Administrative permissions...
     net session >nul 2>>&1
     if %errorLevel% EQU 0 (GOTO admin) ELSE (GOTO notadmin)
 
@@ -64,15 +63,13 @@ echo ------IR COLLECT LOG------%DATE% %TIME% >>%cdrive%%computername%\collection
 echo %logonserver% >> %cdrive%%computername%\collection.log
 echo %computername% >> %cdrive%%computername%\collection.log
 echo %userdomain%\%username% >> %cdrive%%computername%\collection.log
+WMIC product get Name, Version >> %cdrive%%computername%\collection.log
 echo ------------------------------ >>% cdrive%%computername%\collection.log
 systeminfo /FO list >> %cdrive%%computername%\collection.log
 chcp >> %cdrive%%computername%\collection.log
 ipconfig /all >> %cdrive%%computername%\collection.log
 echo ------System Hardware Datails------ >> %cdrive%%computername%\collection.log
 WMIC bios get  manufacturer, smbiosbiosversion >> %cdrive%%computername%\collection.log
-WMIC cpu list full >> %cdrive%%computername%\collection.log
-WMIC memorychip >> %cdrive%%computername%\collection.log
-WMIC diskdrive list brief >> %cdrive%%computername%\collection.log
 ntfsinfo -nobanner -accepteula %cdrive% >> %cdrive%%computername%\collection.log
 echo ------Windows Page file and recovery details------ >> %cdrive%%computername%\collection.log
 WMIC pagefile >> %cdrive%%computername%\collection.log
@@ -82,6 +79,7 @@ WMIC qfe >> %cdrive%%computername%\log\collection.log
 echo ------Installed Software------ >> %cdrive%%computername%\collection.log 
 WMIC product get Name, Version >> %cdrive%%computername%\collection.log
 
+
 :: Begin IR Collection
 echo ------Beging IR Collection------ %date% %time% ------>> %cdrive%%computername%\collection.log
 
@@ -90,7 +88,6 @@ echo ------Gathering User Data %DATE% %TIME%------ >>%cdrive%%computername%\coll
 mkdir %cdrive%%computername%\log\user\
 query user >> %cdrive%%computername%\log\user\currentuser.log
 wmic Desktop >> %cdrive%%computername%\log\user\desktop.log
-wmic logon list full >> %cdrive%%computername%\log\user\logon.log
 wmic useraccount >> %cdrive%%computername%\log\user\useraccount.log
 net user >> %cdrive%%computername%\log\user\user.log
 net localgroup Administrators >> %cdrive%%computername%\log\user\localadmins.log
@@ -271,7 +268,7 @@ if %arch% == 32 (
 REM Grab Last 50 Entries from each primary log
 echo ------Gathering Eventlog %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\collection.log
-WMIC /Output:%cdrive%%computername%\log\eventlog\eventlog.log nteventlog list full
+WMIC nteventlog list full >> %cdrive%%computername%\log\eventlog\eventlog.log nteventlog list full
 wevtutil.exe qe Security /count:50 /rd:true /format:text >> %cdrive%%computername%\log\eventlog\security.log
 wevtutil.exe qe System /count:50 /rd:true /format:text >> %cdrive%%computername%\log\eventlog\system.log
 wevtutil.exe qe Application /count:50 /rd:true /format:text >> %cdrive%%computername%\log\eventlog\application.log
