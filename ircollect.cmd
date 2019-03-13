@@ -60,17 +60,13 @@ echo %DATE% %TIME% - Logging initiated for %COMPUTERNAME% >> %cdrive%%computerna
 
 REM get windows version and system various details
 echo ------IR COLLECT LOG------%DATE% %TIME% >>%cdrive%%computername%\collection.log
-echo %logonserver% >> %cdrive%%computername%\collection.log
-echo %computername% >> %cdrive%%computername%\collection.log
-echo %userdomain%\%username% >> %cdrive%%computername%\collection.log
 WMIC product get Name, Version >> %cdrive%%computername%\collection.log
 echo ------------------------------ >>% cdrive%%computername%\collection.log
 systeminfo /FO list >> %cdrive%%computername%\collection.log
-chcp >> %cdrive%%computername%\collection.log
 ipconfig /all >> %cdrive%%computername%\collection.log
 echo ------System Hardware Datails------ >> %cdrive%%computername%\collection.log
 WMIC bios get  manufacturer, smbiosbiosversion >> %cdrive%%computername%\collection.log
-ntfsinfo -nobanner -accepteula %cdrive% >> %cdrive%%computername%\collection.log
+ntfsinfo.exe -nobanner -accepteula %cdrive% >> %cdrive%%computername%\collection.log
 echo ------Windows Page file and recovery details------ >> %cdrive%%computername%\collection.log
 WMIC pagefile >> %cdrive%%computername%\collection.log
 WMIC recoveros >> %cdrive%%computername%\collection.log
@@ -79,21 +75,17 @@ WMIC qfe >> %cdrive%%computername%\log\collection.log
 echo ------Installed Software------ >> %cdrive%%computername%\collection.log 
 WMIC product get Name, Version >> %cdrive%%computername%\collection.log
 
-
-:: Begin IR Collection
-echo ------Beging IR Collection------ %date% %time% ------>> %cdrive%%computername%\collection.log
-
 REM grab user details
-echo ------Gathering User Data %DATE% %TIME%------ >>%cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\user\
 query user >> %cdrive%%computername%\log\user\currentuser.log
 wmic Desktop >> %cdrive%%computername%\log\user\desktop.log
-wmic useraccount >> %cdrive%%computername%\log\user\useraccount.log
 net user >> %cdrive%%computername%\log\user\user.log
 net localgroup Administrators >> %cdrive%%computername%\log\user\localadmins.log
 logonsessions.exe /accepteula /nobanner >> %cdrive%%computername%\log\user\active-sessions.log
 certutil -store CA >> %cdrive%%computername%\log\user\certificates.log
 certutil -store Root >> %cdrive%%computername%\log\user\certificates.log
+
+REM Get browser history and addons
 BrowsingHistoryView.exe /HistorySource 1 /VisitTimeFilterType 1 /LoadIE 1 /LoadFirefox 1 /LoadChrome 1 /LoadSafari 1 /sort ~2 /scomma %cdrive%%computername%\log\user\history.csv
 BrowserAddonsView.exe /sort Name /scomma %cdrive%%computername%\log\user\browseraddons.csv
 
@@ -102,28 +94,24 @@ mkdir %cdrive%%computername%\log\user\group-policy\
 gpresult /Z > %cdrive%%computername%\log\user\group-policy\group-policy-RSoP.txt
 
 REM File system details
-echo ------Gathering File System Details %DATE% %TIME%------ >>%cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\filesystem\
 tree %SystemRoot% >> %cdrive%%computername%\log\filesystem\tree-windows.log
 tree %UserProfile% >> %cdrive%%computername%\log\filesystem\tree-userprofiles.log
 tree %ProgramFiles% >> %cdrive%%computername%\log\filesystem\tree-programfiles.log
 tree %ProgramFiles(x86)% %cdrive%%computername%\log\filesystem\tree-programfilesx86.log
-streams.exe /accepteula /nobanner-s %SystemRoot%  >> %cdrive%%computername%\log\filesystem\streams-windows.log
-streams.exe /accepteula /nobanner-s %UserProfile% >> %cdrive%%computername%\log\filesystem\streams-userprofiles.log
-sigcheck.exe /accepteula /nobanner-a -e -h -q -u -vt -v %UserProfile% >> %cdrive%%computername%\log\filesystem\sig-userprofiles.log
-sigcheck.exe /accepteula /nobanner-a -e -h -q -u -vt -v %SystemRoot% >> %cdrive%%computername%\log\filesystem\sig-windows.log
-sigcheck.exe /accepteula /nobanner-a -e -h -q -u -vt -v %SystemRoot%\system32 >> %cdrive%%computername%\log\filesystem\streams-windows.log
-
+streams.exe /accepteula /nobanner -s %SystemRoot%  >> %cdrive%%computername%\log\filesystem\streams-windows.log
+streams.exe /accepteula /nobanner -s %UserProfile% >> %cdrive%%computername%\log\filesystem\streams-userprofiles.log
+sigcheck.exe /accepteula /nobanner -a -e -h -q -u -vt -v %UserProfile% >> %cdrive%%computername%\log\filesystem\sig-userprofiles.log
+sigcheck.exe /accepteula /nobanner -a -e -h -q -u -vt -v %SystemRoot% >> %cdrive%%computername%\log\filesystem\sig-windows.log
+sigcheck.exe /accepteula /nobanner -a -e -h -q -u -vt -v %SystemRoot%\system32 >> %cdrive%%computername%\log\filesystem\streams-windows.log
 
 REM systems paths and env
-echo ------Gathering System Environmentecho %DATE% %TIME%------ >>%cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\systemenvn\
 WMIC Path Win32_Environment Where "Name='PATH' And Systemvariable=TRUE" >> %cdrive%%computername%\log\systemenv\systempaths.log
 WMIC Path Win32_Environment Where "Name='PATH' And Systemvariable=FALSE" >> %cdrive%%computername%\log\systemenv\systempaths.log
 WMIC environment >> %cdrive%%computername%\log\systemenv\environment.log
 
 REM Get  drive details
-echo ------Gathering Share Details %DATE% %TIME%------ >>%cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\drive
 WMIC Path Win32_LogicalDisk Get DeviceID^,Description^,DriveType >> %cdrive%%computername%\log\drive\drive.log
 WMIC Path Win32_LogicalDiskToPartition Get Antecedent^,Dependent /Format:list >> %cdrive%%computername%\log\drive\drive.log
@@ -141,12 +129,11 @@ attrib /D /L /S >> %cdrive%%computername%\log\drive\hidden.log
 dir /S /O-D >> %cdrive%%computername%\filesystem >> %cdrive%%computername%\filesystem.log
 
 REM get share details
-WMIC share %cdrive%%computername%\log\share\shares.log
-START /WAIT openedfilesview.exe /stext %cdrive%%computername%\log\share\openfiles.log 
+WMIC share >> %cdrive%%computername%\log\share\shares.log
+openedfilesview.exe /stext >>  %cdrive%%computername%\log\share\openfiles.log 
 psfile.exe /accepteula /nobanner >> %cdrive%%computername%\log\share\remote-openfiles.log 
 
 REM Network activities
-echo ------Gathering Network Information %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\network
 ipconfig /all >> %cdrive%%computername%\log\network\net-config.log
 ipconfig /displaydns >> %cdrive%%computername%\log\network\dns-net.log
@@ -169,13 +156,17 @@ netstat -r >> %cdrive%%computername%\log\network\nb-net.log
 cports.exe /shtml "" /sort 1 /sort ~"Remote Address" >> %cdrive%%computername%\log\network\remoteaddress.html
 
 REM Get host files
-echo ------Gather Windows Hosts Files %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\network\hosts\
-robocopy /ZB /copy:DAT /r:0 /ts /FP /np /E %SYSTEMROOT%\System32\drivers\etc\hosts\ %cdrive%%computername%\log\network\hosts\
-robocopy /ZB /copy:DAT /r:0 /ts /FP /np /E %SystemRoot%\System32\drivers\etc\lmhosts.sam %cdrive%%computername%\log\network\hosts\
+if %arch% == 32 (
+			RawCopy.exe %WINDIR%\System32\drivers\etc\hosts\ %cdrive%%computername%\log\network\hosts\
+			)
+		if %arch% == 64 (
+			RawCopy64.exe %WINDIR%\System32\drivers\etc\hosts\ %cdrive%%computername%\log\network\hosts\
+			)
+
+
 
 REM Windows Firewall details and logs
-echo ------Windows Firewall settings and logs %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 netsh interface show interface >> %cdrive%%computername%\log\network\adapters.log
 netsh firewall show config >> %cdrive%%computername%\log\network\firewall.log
 netsh advfirewall firewall show rule name=all >> %cdrive%%computername%\log\network\firewall.log
@@ -196,7 +187,6 @@ netsh interface dump >> %cdrive%%computername%\log\network\interfacedump.log
 netsh interface portproxy show all >> %cdrive%%computername%\log\network\protproxy.log
 
 REM Grab processes,services and scheduled tasks
-echo ------Gathering processes,services and scheduled tasks %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\services
 schtasks /query /fo LIST /v >> %cdrive%%computername%\log\services\scheduled-tasks.log
 tasklist /FO TABLE >> %cdrive%%computername%\log\services\task.log
@@ -217,18 +207,15 @@ if %arch% == 32 (RawCopy.exe %WINDIR%\SchedLgU.txt %cdrive%%computername%\log\se
 robocopy %WINDIR%\Tasks %cdrive%%computername%\log\services\ /ZB /copy:DAT /r:0 /ts /FP /np 
 
 :: grab autoruns 
-echo ------Gather Autorun Information %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
-autorunsc.exe /accepteula /nobanner -a dehiklst -h -m -s -u %cdrive%%computername%\log\services\autoruns.log
+autorunsc.exe /accepteula /nobanner -a dehiklst -h -m -s -u >> %cdrive%%computername%\log\services\autoruns.log
 
 REM Grab loaded drivers
-echo ------Gathering Loaded Drivers %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\loaded-drivers
 sc query type= driver >> %cdrive%%computername%\log\loaded-drivers\drivers.log
 WMIC sysdriver list full >> %cdrive%%computername%\log\loaded-drivers\drivers.log
 %WINDIR%\System32\driverquery.exe /fo csv /si >> %cdrive%%computername%\log\services\driverdetails.log
 
 REM Look at startup registry entries - to check if anything has been added
-echo ------Gathering Registry Details %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\log\registry
 reg query "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" >> %cdrive%%computername%\log\registry\reg-run.log
 reg query "HKLM\Software\Microsoft\Windows\CurrentVersion\Runonce" >> %cdrive%%computername%\log\registry\reg-runonce.log
@@ -242,14 +229,6 @@ reg query HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs >> %cd
 
 REM get running services
 reg query HKLM\SYSTEM\CurrentControlSet\Services >> %cdrive%%computername%\log\registry\runningservices.log
-
-REM get browser addons
-reg query HKLM\SOFTWARE\Wow6432Node\Google\Chrome\Extensions >> %cdrive%%computername%\log\registry\browserext.log
-reg query HKLM\SOFTWARE\Wow6432Node\Mozilla >> %cdrive%%computername%\log\registry\browserext.log
-reg query HKLM\SOFTWARE\Wow6432Node\MozillaPlugins >> %cdrive%%computername%\log\registry\browserext.log
-reg query "HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects"  >> %cdrive%%computername%\log\registry\browserext.log
-reg query "HKLM\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Extensions"  >> %cdrive%%computername%\log\registry\browserext.log
-reg query "HKLM\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Toolbar"  >> %cdrive%%computername%\log\registry\browserext.log
 
 REM grab the SAM, SECURITY, SOFTWARE, and SYSTEM registry hives
 if %arch% == 32 (
@@ -266,7 +245,6 @@ if %arch% == 32 (
 			)
 
 REM Grab Last 50 Entries from each primary log
-echo ------Gathering Eventlog %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\collection.log
 WMIC nteventlog list full >> %cdrive%%computername%\log\eventlog\eventlog.log nteventlog list full
 wevtutil.exe qe Security /count:50 /rd:true /format:text >> %cdrive%%computername%\log\eventlog\security.log
@@ -286,12 +264,10 @@ if %arch% == 32 (
 			)
 
 REM Grab prefetch files
-echo ------Gathering Prefetch Files %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\preserved-files\Prefetch\ 
 robocopy %WINDIR%\Prefetch %cdrive%%computername%\preserved-files\Prefetch\ *.pf /ZB /copy:DAT /r:0 /ts /FP /np /E
 
 REM Grab windows logs
-echo ------Gathering Windows Logs %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\preserved-files\winlogs\
 robocopy %SYSTEMDRIVE%\Windows\Logs\ %cdrive%%computername%\preserved-files\winlogs\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 
@@ -300,7 +276,6 @@ mkdir %cdrive%%computername%\preserved-files\debug\
 robocopy %cdrive%%computername%\preserved-files\debug\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 
 REM grab WBEM repository - 
-echo ------Gather WMI Repository %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\preserved-files\wmi-repository\
 ::
 :: run WMI_Forensics against these to check for persistences https://github.com/insystemsco/WMI_Forensics
@@ -311,7 +286,6 @@ robocopy %SystemRoot%\system32\wbem\Repository\ %cdrive%%computername%\preserved
 robocopy %SystemRoot%\system32\wbem\Repository\FS\ %cdrive%%computername%\preserved-files\wmi-repository\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 
 REM grab memory dumps
-echo ------Gathering Memory Dumps %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 if not exist %SystemRoot%\memory.dmp got copy memory2
 robocopy %SystemRoot%\MEMORY.DMP %cdrive%%computername%\preserved-files\memory-dumps\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 :memory2
@@ -319,7 +293,6 @@ robocopy %SystemRoot%\Minidump\ %cdrive%%computername%\preserved-files\memory-du
 robocopy %AppData%\Local\CrashDumps %cdrive%%computername%\preserved-files\memory-dumps\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 
 REM Garb NTUSER.DAT
-echo ------Gathering NTUSER_DAT %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\preserved-files\NTUSER_DAT
 if %arch% == 32 (RawCopy.exe "%USERPROFILE%\NTUSER.DAT" %cdrive%%computername%\preserved-files\NTUSER_DAT) else (RawCopy64.exe "%USERPROFILE%\NTUSER.DAT" %cdrive%%computername%\preserved-files\NTUSER_DAT)
 
@@ -331,33 +304,27 @@ IF EXIST "C:\Users\" (
 )
 
 REM Grab recent file cache
-echo ------Gathering Recent File Cache %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\preserved-files\AppCompat\
 if %arch% == 32 (RawCopy.exe %WINDIR%\AppCompat\Programs\RecentFileCache.bcf %cdrive%%computername%\preserved-files\AppCompat) else (RawCopy64.exe %WINDIR%\AppCompat\Programs\RecentFileCache.bcf %cdrive%%computername%\preserved-files\AppCompat)
-
 if %arch% == 32 (RawCopy.exe %SystemRoot%\AppCompat\Programs\Amcache.hve %cdrive%%computername%\preserved-files\AppCompat) else (RawCopy64.exe %SystemRoot%\AppCompat\Programs\Amcache.hve %cdrive%%computername%\preserved-files\AppCompat)
 
-REM Grab memory image
-echo ------Creating Memory Image %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
-mkdir %cdrive%%computername%\preserved-files\memory-image\
-winpmem.exe %cdrive%%computername%\preserved-files\memory-image\physmem.raw -p
-
 REM Grab NTFS artifacts
-echo ------Gathering NTFS artifacts %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\preserved-files\ntfs\
 if %arch% == 32 (RawCopy.exe %SYSTEMDRIVE%0 %cdrive%%computername%\preserved-files\ntfs) else (RawCopy64.exe %SYSTEMDRIVE%0 %cdrive%%computername%\preserved-files\ntfs)
 if %arch% == 32 (RawCopy.exe %SYSTEMDRIVE%2 %cdrive%%computername%\preserved-files\ntfs) else (RawCopy64.exe %SYSTEMDRIVE%2 %cdrive%%computername%\preserved-files\ntfs)
 
 REM copy start up data
-echo ------Gathering Startup Data %DATE% %TIME%------ >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\preserved-files\startup\
 robocopy "%ProgramData%\Microsoft\Windows\Start Menu\Programs\Startup" %cdrive%%computername%\preserved-files\startup\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 
 REM SRUM collection
-echo ------SRUM------%DATE% %TIME% >> %cdrive%%computername%\collection.log
 mkdir %cdrive%%computername%\srumdump\
 if %arch% == 32 (RawCopy.exe %WINDIR%\System32\sru\SRUDB.dat %cdrive%%computername%\srumdump\ else (RawCopy64.exe %WINDIR%\System32\sru\SRUDB.dat %cdrive%%computername%\srumdump\)
 srum_dump.exe -i %cdrive%%computername%\srumdump\SRUDB.dat -o %cdrive%%computername%\srumdump\%computername%.xlsx -t %cdrive%%computername%\srumdump\SRUM_TEMPLATE.xlsx
+
+REM Grab memory image
+mkdir %cdrive%%computername%\preserved-files\memory-image\
+winpmem.exe %cdrive%%computername%\preserved-files\memory-image\physmem.raw -p
 
 :: End - write out data and time
 echo %DATE% %TIME% - Exiting collection script and stopping logging for computer %COMPUTERNAME% >> %cdrive%%computername%\Collection.log
@@ -366,4 +333,3 @@ echo %DATE% %TIME% - Exiting collection script and stopping logging for computer
 ENDLOCAL
 :end
 exit
-
