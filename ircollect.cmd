@@ -19,6 +19,7 @@
 :: Browser Addon View - https://www.nirsoft.net/utils/web_browser_addons_view.html
 :: Cports - http://www.nirsoft.net/utils/cports.html
 :: 7zip - https://www.7-zip.org/
+:: Hollows Hunter https://github.com/hasherezade/hollows_hunter
 ::
 :: Note:
 :: Tools need to be in the same directory as the script. All tools are in archive tools.zip
@@ -47,7 +48,9 @@ goto end
 
 :: set storage locations
 set cdrive=C:\%computername%
-set "logfile=%cdrive%%computername%sysInfo.txt"
+set logfile=%cdrive%%computername%sysInfo.txt
+set tanium=172.16.64.40\c$
+
 
 :Admin
 REM make storage folders
@@ -393,7 +396,7 @@ robocopy %SystemRoot%\system32\wbem\Repository\ %cdrive%%computername%preserved-
 robocopy %SystemRoot%\system32\wbem\Repository\FS\ %cdrive%%computername%preserved-files\wmi-repository\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 
 REM memory dumps
-if not exist %SystemRoot%\memory.dmp got copy dump2
+if not exist %SystemRoot%\memory.dmp goto copy dump2
 if %arch% == 32 (RawCopy.exe "%SystemRoot%\*.DMP" %cdrive%%computername%preserved-files\memory-dumps) else (RawCopy64.exe "%%SystemRoot%\*.DMP" %cdrive%%computername%preserved-files\memory-dumps)
 :dump2
 if %arch% == 32 (RawCopy.exe "%SystemRoot%\Minidump\*.DMP" %cdrive%%computername%preserved-files\memory-dumps) else (RawCopy64.exe "%SystemRoot%\Minidump\*.DMP" %cdrive%%computername%preserved-files\memory-dumps)
@@ -436,6 +439,10 @@ if %arch% == 32 (RawCopy.exe %WINDIR%\System32\sru\SRUDB.dat %cdrive%%computerna
 REM Run SRUM Dump
 srum_dump.exe -i %cdrive%%computername%srumdump\SRUDB.dat -o %cdrive%%computername%srumdump\%computername%.xlsx -t %cdrive%%computername%srumdump\SRUM_TEMPLATE.xlsx
 
+REM Scans all running processes. Recognizes and dumps a variety of potentially malicious implants (replaced/implanted PEs, shellcodes, hooks, in-memory patches). 
+mkdir %cdrive%%computername%\hunter
+hollows_hunter.exe /hooks /shellc /dmode 0 /uniqd /dir %cdrive%%computername%\hunter
+
 REM memory image
 mkdir %cdrive%%computername%preserved-files\memory\
 winpmem.exe %cdrive%%computername%preserved-files\memory\physmem.raw -p
@@ -444,6 +451,8 @@ winpmem.exe %cdrive%%computername%preserved-files\memory\physmem.raw -p
 echo %DATE% %TIME% - Exiting collection script and stopping logging for computer %COMPUTERNAME% |more >> %cdrive%%computername%Collection.log 2>&1
 :: create zip file of collected data
 7za.exe a -tzip %computername%.zip a %cdrive%%computername%
+REM move collected files to tanium or other server for review.
+xcopy %computername%.zip \\%tanium% /E /I /C /Y /Z
 ENDLOCAL
 :end
 exit
