@@ -39,18 +39,15 @@ if "%PROCESSOR_ARCHITECTURE%" == "AMD64" set arch=64
     if %errorLevel% EQU 0 (GOTO admin) ELSE (GOTO notadmin)
 
 :notadmin
-echo !!! Administrative permissions not detected !!!
-echo .
-Echo !!!You must run this as an Administrator!!!
-echo !!!
-echo .
+echo !!! Administrative permissions not detected !!! >> %logfile%
+Echo !!!You must run this as an Administrator!!! >> %logfile%
 goto end
 
 :: set storage locations
-set cdrive=C:\%computername%
+set cdrive=C:\%computername%\
 set logfile=%cdrive%%computername%sysInfo.txt
-set tanium=172.16.64.40\c$
-
+:: uncomment to have the files moved for processing.
+::set offload=someserver\c$
 
 :Admin
 REM make storage folders
@@ -452,7 +449,7 @@ echo %DATE% %TIME% - Exiting collection script and stopping logging for computer
 :: create zip file of collected data
 7za.exe a -tzip %computername%.zip a %cdrive%%computername%
 REM move collected files to tanium or other server for review.
-xcopy %computername%.zip \\%tanium% /E /I /C /Y /Z
+::xcopy %computername%.zip \\%tanium% /E /I /C /Y /Z
 ENDLOCAL
 :end
 exit
