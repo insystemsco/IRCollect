@@ -1,5 +1,5 @@
-@ECHO off
-::
+::=================================================================================================================
+:: Incident Response Collector - Ver. 1.0
 :: Link: https://github.com/insystemsco/IRCollect/
 ::
 :: Provided as-is with no warranty.
@@ -21,34 +21,35 @@
 :: 7zip - https://www.7-zip.org/
 :: Hollows Hunter https://github.com/hasherezade/hollows_hunter
 ::
-:: Note:
+:: About:
+:: IRCollect is a script and collection of tolls to help with IR Forensics on Windows 7 and higher systems. 
+::
+:: Notes:
 :: Tools need to be in the same directory as the script. All tools are in archive tools.zip
-::
-::
-@echo off
+::=================================================================================================================
+@ECHO off
+
 :: check for administartor rights
-    net session >nul 2>>&1
-    if %errorLevel% EQU 0 (GOTO admin) ELSE (GOTO notadmin)
+net session >nul 2>>&1
+if %errorLevel% EQU 0 (GOTO admin) ELSE (GOTO notadmin)
 
 :notadmin
 echo !!!Administrative permissions not detected!!!
 Echo !!!You must run this as an Administrator!!!
-exit /B 1
+EXIT /B 1
 
+::Begin Forensics Collection
 :Admin
 ::set variables
+title Incident Response Collector
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 SET systemdrive=C:\
 SET interactive=0
 SET ST=%time%
-SET irc=%~n0
+SET tr3=%~n0
 SET parent=%~dp0
 COLOR 0a
 chcp 65001>nul
-:tee
-ECHO %* >> "%collectionlog%"
-ECHO %*
-exit /B 0
 ECHO %CMDCMDLINE% | FINDSTR /L %COMSPEC% >NUL 2>&1
 IF %ERRORLEVEL% == 0 SET interactive=1
 
@@ -56,18 +57,22 @@ IF %ERRORLEVEL% == 0 SET interactive=1
 if "%PROCESSOR_ARCHITECTURE%" == "x86" set arch=32
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" set arch=64
 
-:: set storage locations 
+:: set storage locations
 set cdrive=c:\%computername%\
-set collection=%cdrive%%collection%\
+set collection=%cdrive%%%collection%\
 set preserved=%preserved%\
+set logfile=%cdrive%%%collection%SystemInfo.txt
+set collectionlog=%cdrive%%tr3%.%DATE:~10,4%_%DATE:~4,2%_%DATE:~7,2%%TIME:~0,2%_%TIME:~3,2%_%TIME:~6,2%.log
 
-::set logging locations
-set logfile=%cdrive%SystemInfo.txt
-set collectionlog=%cdrive%%irc%.%DATE:~10,4%_%DATE:~4,2%_%DATE:~7,2%%TIME:~0,2%_%TIME:~3,2%_%TIME:~6,2%.log
-::Uncomment this line to have the files moved. You do not need the \\ in front of of the sever or IP address.
-rem set offload=someserver\c$\gatherer
+::Set location to move collected data 
+set offload=172.16.64.40\c$\gatherer
 
-call :tee
+REM logging subroutine
+:tee
+ECHO %* >> "%collectionlog%"
+ECHO %*
+EXIT /B 0
+
 REM make storage folders
 if not exist %cdrive% (
 	mkdir %cdrive%collection
@@ -77,6 +82,7 @@ if not exist %cdrive% (
 ::hide colletion folders from users
 attrib +s +h %cdrive%
 
+call :tee
 :: Collect basic system information
 REM Date
 ECHO ============= >> %logfile%
