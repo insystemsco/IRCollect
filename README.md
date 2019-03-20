@@ -1,12 +1,12 @@
 # IRCollect
 About:
-IRCollect is a script and collection of tolls to help with IR Forensics on Windows 7 and higher systems.<br>
+IRCollect is a script and collection of tools to help with IR Forensics on Windows 7 and higher systems.<br>
 <br>
-
+<br>
 Requires:<br>
 Windows 7 or higher and admin rights. Tools need to be in the same directory as the script. All tools are in archive tools.zip
 <br>
-
+<br>
 Tools:
 systernals - https://docs.microsoft.com/en-us/sysinternals/downloads/sysinternals-suite<br>
 rawcopy - https://github.com/jschicht/RawCopy<br>
