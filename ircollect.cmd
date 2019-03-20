@@ -7,7 +7,7 @@
 ::
 ::
 :: Requires:
-:: Windows 7 or higher and admin rights.
+:: Windows 7 or higher and administrator rights.
 ::
 :: Tools:
 :: systernals - https://docs.microsoft.com/en-us/sysinternals/downloads/sysinternals-suite
@@ -175,7 +175,7 @@ ECHO === Firewall Config: >> %logfile%
 ECHO ============= >> %logfile%
 mkdir %collection%firewall
 netsh firewall show config >> %logfile% 2>&1
-echo for more details see %%collection%firewall >> %logfile%
+echo for more details see %collection%firewall >> %logfile%
 netsh advfirewall firewall show rule name=all |more >> %collection%firewall\firewall.log 2>&1
 netsh advfirewall show global |more >> %collection%firewall\firewall.log 2>&1
 netsh advfirewall show allprofiles |more >> %collection%firewall\firewall.log 2>&1
@@ -184,7 +184,7 @@ netsh advfirewall firewall dump |more >> %collection%firewall\firewall.log 2>&1
 netsh advfirewall firewall show rule name=all verbose |more >> %collection%firewall\firewall.log 2>&1
 netsh advfirewall firewall show logging |more >> %collection%firewall\firewall.log 2>&1
 robocopy %SystemRoot%\System32\LogFiles\Firewall\pfirewall.log %collection%firewall\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
-robocopy %SystemRoot%\System32\LogFiles\HTTPERR\httperr*.log cdrive%%computername%%collection%firewall\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
+robocopy %SystemRoot%\System32\LogFiles\HTTPERR\httperr*.log %collection%firewall\ /ZB /copy:DAT /r:0 /ts /FP /np /E 
 
 REM Scheduled Tasks
 ECHO. >> %logfile%
