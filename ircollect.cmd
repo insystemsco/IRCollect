@@ -445,6 +445,7 @@ winpmem.exe %preserved%memory\physmem.raw -p
 dir %cdrive% /O /S /B /AHD |sort |more >> %logfile% 2>&1
 
 ::preseve collected then move data to remote server and clean up files.
+attrib -s -h %cdrive%
 7za.exe a -tzip %computername%.zip a %cdrive%
 xcopy %cdrive%\%computername%.zip %systemdrive% /E /I /C /Y /Z
 :: uncomment this line to have the collected data uploaded.
