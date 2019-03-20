@@ -7,7 +7,7 @@ Requires:<br>
 Windows 7 or higher and admin rights. Tools need to be in the same directory as the script. All tools are in archive tools.zip
 <br>
 <br>
-Tools:
+Tools:<br>
 systernals - https://docs.microsoft.com/en-us/sysinternals/downloads/sysinternals-suite<br>
 rawcopy - https://github.com/jschicht/RawCopy<br>
 winpmem - https://github.com/insystemsco/IR_Collect<br>
