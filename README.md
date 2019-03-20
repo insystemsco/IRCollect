@@ -14,7 +14,10 @@ Browser History View - https://www.nirsoft.net/utils/browsing_history_view.html<
 Browser Addon View - https://www.nirsoft.net/utils/web_browser_addons_view.html<br>
 Cports - http://www.nirsoft.net/utils/cports.html<br>
 7zip - https://www.7-zip.org/<br>
+Hollows Hunter https://github.com/hasherezade/hollows_hunter<br>
 <br>
+About:
+IRCollect is a script and collection of tolls to help with IR Forensics on Windows 7 and higher systems.<br>
 <br>
 Notes:<br>
 Tools need to be in the same directory as the script. All tools are in archive tools.zip
