@@ -22,7 +22,7 @@
 :: Hollows Hunter https://github.com/hasherezade/hollows_hunter
 ::
 :: About:
-:: IRCollect is a script and collection of tolls to help with IR Forensics on Windows 7 and higher systems. 
+:: IRCollect is a script and collection of tools to help with IR Forensics on Windows 7 and higher systems. 
 ::
 :: Notes:
 :: Tools need to be in the same directory as the script. All tools are in archive tools.zip
