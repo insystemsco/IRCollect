@@ -18,4 +18,8 @@ Browser Addon View - https://www.nirsoft.net/utils/web_browser_addons_view.html<
 Cports - http://www.nirsoft.net/utils/cports.html<br>
 7zip - https://www.7-zip.org/<br>
 Hollows Hunter - https://github.com/hasherezade/hollows_hunter<br>
-
+<br>
+Other useful tools:<br>
+Volatility Memory Forensics - https://www.volatilityfoundation.org/<br>
+Loki Scanner - https://github.com/Neo23x0/Loki<br>
+Yara - https://virustotal.github.io/yara/<br>
