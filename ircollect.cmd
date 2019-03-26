@@ -436,16 +436,16 @@ mkdir %preserved%srumdump
 if %arch% == 32 (RawCopy.exe %WINDIR%\System32\sru\SRUDB.dat %preserved%srumdump\ else (RawCopy64.exe %WINDIR%\System32\sru\SRUDB.dat %preserved%srumdump\)
 
 REM Run SRUM Dump
-srum_dump.exe -i %preserved%srumdump\SRUDB.dat -o %cpreserved%%computername%.xlsx -t %preserved%srumdump\SRUM_TEMPLATE.xlsx
+srum_dump.exe -i %preserved%srumdump\SRUDB.dat -o %preserved%%computername%.xlsx -t %preserved%srumdump\SRUM_TEMPLATE.xlsx
+
+REM dumping memory image
+mkdir %preserved%memory
+winpmem.exe %preserved%memory\physmem.raw -p
 
 REM Scans all running processes. Recognizes and dumps a variety of potentially malicious implants replaced/implanted PEs, shellcodes, hooks, in-memory patches. 
 mkdir %collection%hunter
 echo Scanning for potentially malicious implants replaced/implanted PEs, shellcodes, hooks, in-memory patches. >>  %collection%hunter\README.txt
 hollows_hunter.exe /hooks /shellc /dmode 0 /uniqd /dir %collection%hunter
-
-REM dumping memory image
-mkdir %preserved%memory
-winpmem.exe %preserved%memory\physmem.raw -p
 
 ::list collected data
 dir %cdrive% /O /S /B /AHD |sort |more >> %logfile% 2>&1
